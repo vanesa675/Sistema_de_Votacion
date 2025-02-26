@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Formulario de Votación</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 110px; /* Margen en toda la página */
+        }
+        .logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 80px; /* Ajusta el tamaño del logo */
+        }
+        /* Ocultar radios */
+        input[type="radio"] {
+            display: none;
+        }
+        /* Efecto al pasar el cursor sobre la imagen */
+        .candidato-img {
+            transition: transform 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .candidato-img:hover {
+            transform: scale(1.05); /* Aumenta ligeramente al pasar el cursor */
+        }
+        /* Estilo para el candidato seleccionado */
+        input[type="radio"]:checked + .card {
+            border: 4px solid #007bff;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="container">
+
+    <!-- Logo en la esquina superior izquierda -->
+    <img src="logo.png" alt="Logo del Colegio" class="logo"> <!-- Cambia 'logo.png' por la ruta de tu logo -->
+
+    <!-- Título centrado -->
+    <h1 class="text-center mb-5">Votaciones Personería 2025</h1>
+
+    <!-- Sección de Nombre y Grado en la misma línea -->
+    <div class="row g-3 align-items-center mb-5">
+        <div class="col-auto">
+            <label for="nombre" class="form-label">Nombre:</label>
+        </div>
+        <div class="col-6">
+            <input type="text" id="nombre" class="form-control" placeholder="Ingrese su nombre">
+        </div>
+        <div class="col-auto">
+            <label for="grado" class="form-label">Grado:</label>
+        </div>
+        <div class="col-4">
+            <select id="grado" class="form-select">
+                <option selected disabled>Seleccione su grado</option>
+                <option value="0">0°</option>
+                <option value="101">1°A</option>
+                <option value="102">1°B</option>
+                <option value="201">2°A</option>
+                <option value="202">2°B</option>
+                <option value="3">3°</option>
+                <option value="4">4°</option>
+                <option value="5">5°</option>
+                <option value="601">601</option>
+                <option value="602">602</option>
+                <option value="701">701</option>
+                <option value="702">702</option>
+                <option value="801">801</option>
+                <option value="802">802</option>
+                <option value="901">901</option>
+                <option value="902">902</option>
+                <option value="10">10°</option>
+                <option value="11">11°</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Tarjetas de candidatos con selección -->
+    <div class="row">
+        <div class="col-sm-4 mb-3">
+            <label>
+                <input type="radio" name="candidato" value="1">
+                <div class="card">
+                    <img src="candidato1.jpg" class="card-img-top candidato-img" alt="Candidato 1">
+                    <div class="card-body">
+                        <h3 class="card-title">Candidato #01</h3>
+                        <p class="card-text">Descripción breve del candidato.</p>
+                    </div>
+                </div>
+            </label>
+        </div>
+        <div class="col-sm-4 mb-3">
+            <label>
+                <input type="radio" name="candidato" value="2">
+                <div class="card">
+                    <img src="candidato2.jpg" class="card-img-top candidato-img" alt="Candidato 2">
+                    <div class="card-body">
+                        <h3 class="card-title">Candidato #02</h3>
+                        <p class="card-text">Descripción breve del candidato.</p>
+                    </div>
+                </div>
+            </label>
+        </div>
+        <div class="col-sm-4 mb-3">
+          <label>
+              <input type="radio" name="candidato" value="2">
+              <div class="card">
+                  <img src="candidato2.jpg" class="card-img-top candidato-img" alt="Candidato 2">
+                  <div class="card-body">
+                      <h3 class="card-title">Candidato #02</h3>
+                      <p class="card-text">Descripción breve del candidato.</p>
+                  </div>
+              </div>
+          </label>
+      </div>
+    </div>
+
+    <script>
+        // Selecciona todas las imágenes de candidatos
+        document.querySelectorAll(".candidato-img").forEach(img => {
+            img.addEventListener("click", function() {
+                // Desmarcar todas las tarjetas
+                document.querySelectorAll(".card").forEach(card => card.classList.remove("border-primary"));
+
+                // Agregar borde a la tarjeta seleccionada
+                this.closest(".card").classList.add("border-primary");
+
+                // Marcar el radio button correspondiente
+                this.closest("label").querySelector("input").checked = true;
+            });
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
