@@ -7,7 +7,7 @@ from reportlab.pdfgen import canvas
 import pandas as pd
 import io
 import re
-from .models import Estudiante, Grado, Candidato
+from .models import Estudiante, Grado, Candidato, Mesa
 
 # Función para verificar si el usuario es administrador
 def es_admin(user):
@@ -30,17 +30,19 @@ def guardar_voto(request):
         nombre = request.POST.get("nombre")
         grado_id = request.POST.get("grado")
         candidato_id = request.POST.get("candidato")
+        mesa_id = request.POST.get("mesa")  # 🔹 Obtener la mesa desde el formulario
 
-        if nombre and grado_id and candidato_id:
+        if nombre and grado_id and candidato_id and mesa_id:
             try:
                 grado = Grado.objects.get(id=grado_id)
                 candidato = Candidato.objects.get(id=candidato_id)
+                mesa = Mesa.objects.get(id=mesa_id)  # 🔹 Validar la mesa
 
-                # Verifica si el estudiante ya votó en ese grado
-                if Estudiante.objects.filter(nombre=nombre, grado=grado).exists():
-                    messages.error(request, "⚠️ Este estudiante ya ha votado.")
+                # Verifica si el estudiante ya votó en esa mesa
+                if Estudiante.objects.filter(nombre=nombre, grado=grado, mesa=mesa).exists():
+                    messages.error(request, "⚠️ Este estudiante ya ha votado en esta mesa.")
                 else:
-                    estudiante = Estudiante(nombre=nombre, grado=grado, candidato=candidato)
+                    estudiante = Estudiante(nombre=nombre, grado=grado, candidato=candidato, mesa=mesa)
                     estudiante.save()
                     messages.success(request, "✅ ¡Voto registrado correctamente!")
 
@@ -48,9 +50,12 @@ def guardar_voto(request):
                 messages.error(request, "⚠️ Grado no encontrado.")
             except Candidato.DoesNotExist:
                 messages.error(request, "⚠️ Candidato no encontrado.")
+            except Mesa.DoesNotExist:
+                messages.error(request, "⚠️ Mesa no encontrada.")
 
-    grados = sorted(Grado.objects.all(), key=extraer_numero)  # Ordenamos los grados correctamente
-    return render(request, "index.html", {"grados": grados})
+    grados = sorted(Grado.objects.all(), key=extraer_numero)
+    mesas = Mesa.objects.all()  # 🔹 Obtener todas las mesas disponibles
+    return render(request, "index.html", {"grados": grados, "mesas": mesas})
 
 
 @login_required

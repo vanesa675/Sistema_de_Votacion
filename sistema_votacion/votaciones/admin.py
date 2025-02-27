@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Grado, Estudiante, Candidato, Voto
+from .models import Grado, Estudiante, Candidato, Voto, Mesa
 
 class GradoAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'descargar_pdf', 'descargar_excel')
@@ -32,5 +32,6 @@ admin.site.register(Grado, GradoAdmin)
 admin.site.register(Estudiante)
 admin.site.register(Candidato)
 admin.site.register(Voto)
+admin.site.register(Mesa)
 admin.site.index_template = "admin/index.html"
 

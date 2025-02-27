@@ -7,76 +7,20 @@
     <title>Formulario de Votación</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" href="{% static 'img/logo.jpeg' %}" type="image/x-icon">
-    <style>
-        #alerta-exito, #alerta-error {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            opacity: 0;
-            visibility: hidden;
-            transition: transform 0.3s ease-out, opacity 0.3s;
-            z-index: 10000;
-        }
-        
-        #alerta-exito {
-            background: #4CAF50;
-            color: white;
-        }
-        
-        #alerta-error {
-            background: #FF3B3B;
-            color: white;
-        }
-        
-        #alerta-exito.mostrar, #alerta-error.mostrar {
-            opacity: 1;
-            visibility: visible;
-            transform: translate(-50%, -50%) scale(1);
-        }
-        
-        .check-animado, .cross-animado {
-            font-size: 40px;
-            display: block;
-            margin-bottom: 10px;
-        }
-        
-        @keyframes crecerIcono {
-            0% { transform: scale(0); }
-            100% { transform: scale(1); }
-        }
-        
-        .check-animado {
-            animation: crecerIcono 0.5s ease-out forwards;
-        }
-        
-        .cross-animado {
-            animation: crecerIcono 0.5s ease-out forwards;
-        }
-        
-    </style>
 </head>
 <body class="relative flex flex-col items-center justify-center min-h-screen bg-gray-100">
 
-    <!-- Banner de Fondo -->
     <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{% static 'img/banner.jpeg' %}');">
         <div class="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-md"></div>
     </div>
 
-    <!-- Contenido -->
     <div class="relative w-full max-w-4xl p-8 bg-white bg-opacity-70 backdrop-blur-md shadow-lg rounded-lg text-center">
         <img src="{% static 'img/logo.png' %}" alt="Logo del Colegio" class="w-24 mx-auto mb-4 bg-transparent">
         <h1 class="text-3xl font-bold text-gray-800">Votaciones Personería 2025</h1>
         <form method="POST" action="{% url 'guardar_voto' %}">
             {% csrf_token %}
             <div class="flex flex-wrap w-full max-w-lg my-6 mx-auto">
-                <div class="w-1/2 px-2">
+                <div class="w-1/3 px-2">
                     <label class="block text-gray-700 font-semibold mb-2">Grado:</label>
                     <select name="grado" class="block w-full p-2 border border-gray-300 rounded-lg" required>
                         <option value="" disabled selected hidden>Seleccione su grado</option>
@@ -86,7 +30,17 @@
                     </select>
                 </div>
                 
-                <div class="w-1/2 px-2">
+                <div class="w-1/3 px-2">
+                    <label class="block text-gray-700 font-semibold mb-2">Mesa:</label>
+                    <select name="mesa" class="block w-full p-2 border border-gray-300 rounded-lg" required>
+                        <option value="" disabled selected hidden>Seleccione su mesa</option>
+                        {% for mesa in mesas %}
+                            <option value="{{ mesa.id }}">{{ mesa.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="w-1/3 px-2">
                     <label class="block text-gray-700 font-semibold mb-2">Nombre:</label>
                     <input type="text" name="nombre" class="block w-full p-2 border border-gray-300 rounded-lg" placeholder="Ingrese su nombre" required>
                 </div>
@@ -100,7 +54,7 @@
                         <p class="text-lg font-semibold">Candidato #01</p>
                     </div>
                 </label>
-        
+                
                 <label class="cursor-pointer">
                     <input type="radio" name="candidato" value="2" class="hidden peer">
                     <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition p-4 text-center peer-checked:ring-2 peer-checked:ring-blue-500">
@@ -108,7 +62,7 @@
                         <p class="text-lg font-semibold">Candidato #02</p>
                     </div>
                 </label>
-        
+                
                 <label class="cursor-pointer">
                     <input type="radio" name="candidato" value="3" class="hidden peer">
                     <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition p-4 text-center peer-checked:ring-2 peer-checked:ring-blue-500">
@@ -125,54 +79,5 @@
             </div>
         </form>
     </div>
-
-    {% if messages %}
-    {% for message in messages %}
-    <div id="alerta-exito" class="oculto">
-        <span class="check-animado">✔</span>
-        <p id="mensaje-exito"></p>
-    </div>
-    
-    <div id="alerta-error" class="oculto">
-        <span class="cross-animado">✖</span>
-        <p id="mensaje-error"></p>
-    </div>
-    
-    
-    {% endfor %}
-{% endif %}
-<script>
-    function mostrarAlerta(tipo, mensaje) {
-        let alerta;
-        if (tipo === "exito") {
-            alerta = document.getElementById("alerta-exito");
-            document.getElementById("mensaje-exito").innerText = mensaje;
-        } else if (tipo === "error") {
-            alerta = document.getElementById("alerta-error");
-            document.getElementById("mensaje-error").innerText = mensaje;
-        }
-
-        alerta.classList.add("mostrar");
-
-        setTimeout(() => {
-            alerta.classList.remove("mostrar");
-        }, 2000);
-    }
-
-    // Ejecutar si hay mensajes en Django
-    document.addEventListener("DOMContentLoaded", function () {
-        {% if messages %}
-            {% for message in messages %}
-                {% if message.tags == "success" %}
-                    mostrarAlerta("exito", "{{ message }}");
-                {% elif message.tags == "error" %}
-                    mostrarAlerta("error", "{{ message }}");
-                {% endif %}
-            {% endfor %}
-        {% endif %}
-    });
-</script>
-
-
 </body>
 </html>

@@ -5,6 +5,12 @@ class Grado(models.Model):
 
     def __str__(self):
         return self.nombre
+    
+class Mesa(models.Model):  # Renombrado de "mesa" a "Mesa"
+    nombre = models.CharField(max_length=100, unique=True)  # Ejemplo: "Mesa 1", "Mesa 2"
+
+    def __str__(self):
+        return self.nombre
 
 class Candidato(models.Model):
     nombre = models.CharField(max_length=100)
@@ -30,3 +36,9 @@ class Voto(models.Model):
     grado = models.ForeignKey(Grado, on_delete=models.CASCADE, default=1)  # ✅ Usar un grado por defecto
     def __str__(self):
         return f"{self.estudiante} votó por {self.candidato}"
+    
+
+
+
+    
+
