@@ -1,0 +1,10 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+    <div style="margin-bottom: 20px;">
+        <h2>📊 Descargar Reportes de Todos los Grados</h2>
+        <a href="{% url 'descargar_todos_pdf' %}" class="button" style="margin-right:10px;">📄 Descargar TODOS los PDF</a>
+        <a href="{% url 'descargar_todos_excel' %}" class="button">📊 Descargar TODOS los Excel</a>
+    </div>
+    {{ block.super }}
+{% endblock %}
