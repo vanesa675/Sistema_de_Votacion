@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.contrib.auth.decorators import login_required, user_passes_test
 from votaciones.views import (
-    guardar_voto, descargar_pdf, descargar_excel, descargar_todos_pdf, descargar_todos_excel
+    guardar_voto, descargar_pdf, descargar_excel, descargar_todos_pdf, descargar_todos_excel, generar_pdf
 )
 
 # Función para verificar si el usuario es administrador
@@ -14,7 +14,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Página principal
-    path('', guardar_voto, name='guardar_voto'),
+    path('', guardar_voto, name='index'),
+    
 
     # 📌 Rutas para descargar reportes **POR GRADO**
     path('descargar-pdf/<int:grado>/', login_required(user_passes_test(es_admin)(descargar_pdf)), name='descargar_pdf'),
@@ -23,4 +24,5 @@ urlpatterns = [
     # 📌 Rutas para descargar reportes **DE TODOS LOS GRADOS**
     path('descargar-todos-pdf/', login_required(user_passes_test(es_admin)(descargar_todos_pdf)), name='descargar_todos_pdf'),
     path('descargar-todos-excel/', login_required(user_passes_test(es_admin)(descargar_todos_excel)), name='descargar_todos_excel'),
+    path("descargar-pdf/", generar_pdf, name="descargar_pdf"),
 ]
