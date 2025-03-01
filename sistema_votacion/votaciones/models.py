@@ -7,18 +7,20 @@ class Grado(models.Model):
         return self.nombre
     
 class Mesa(models.Model):
-    nombre = models.IntegerField(unique=True)
+    nombre = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
-        return f"Mesa {self.nombre}"
+        return f"{self.nombre}"
 
 class Candidato(models.Model):
     nombre = models.CharField(max_length=100)
+    tarjeton = models.CharField(max_length=100, unique=True)  # Número único y obligatorio
     descripcion = models.TextField(blank=True, null=True)
-    imagen = models.ImageField(upload_to="candidatos/", default="candidatos/perfil.png")  # ✅ Imagen por defecto
+    imagen = models.ImageField(upload_to="candidatos/", default="candidatos/perfil.png")
 
     def __str__(self):
-        return self.nombre
+        return f"{self.nombre} - Tarjetón {self.tarjeton}"
+
 
 class Estudiante(models.Model):
     nombre = models.CharField(max_length=100)

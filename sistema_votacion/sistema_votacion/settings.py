@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'sistema_votacion.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'votaciones25',
+        'NAME': 'votaciones',
         'USER': 'root',
         'PASSWORD': 'root',
         'HOST': 'localhost',
@@ -122,8 +122,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+# Configuración de archivos estáticos
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+# Carpeta donde Django recolectará archivos estáticos en producción
+
 
 
 

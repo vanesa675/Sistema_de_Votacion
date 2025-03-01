@@ -31,7 +31,6 @@ class ReporteAdmin(admin.ModelAdmin):
 admin.site.register(Grado, GradoAdmin)
 admin.site.register(Estudiante)
 admin.site.register(Candidato)
-admin.site.register(Voto)
 admin.site.register(Mesa)
 admin.site.index_template = "admin/index.html"
 
