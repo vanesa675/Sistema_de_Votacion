@@ -88,7 +88,13 @@
                     <input type="radio" name="candidato" value="1" class="hidden peer" required>
                     <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition p-4 text-center peer-checked:ring-2 peer-checked:ring-blue-500">
                         <img src="{% static 'img/Daniel.jpeg' %}" alt="Candidato 1" class="w-full rounded-lg mb-2 transform transition hover:scale-105">
-                        <p class="text-lg font-semibold">Tarjetón #{{ candidato.tarjeton }}</p>
+                        
+                        <!-- Tarjetón con icono -->
+                        <div class="flex items-center justify-center space-x-2">
+                            <img src="{% static 'img/chimuelo1.jpg' %}" alt="Tarjetón" class="w-5 h-5 rounded-full border border-gray-300">
+                            <p class="text-lg font-semibold">Tarjetón #{{ candidato.tarjeton }}</p>
+                        </div>
+            
                         <p class="text-xl font-semibold text-gray-800">{{ candidato.nombre }}</p>
                     </div>
                 </label>
@@ -97,7 +103,13 @@
                     <input type="radio" name="candidato" value="2" class="hidden peer">
                     <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition p-4 text-center peer-checked:ring-2 peer-checked:ring-blue-500">
                         <img src="{% static 'img/Angela.jpeg' %}" alt="Candidato 2" class="w-full rounded-lg mb-2 transform transition hover:scale-105">
-                        <p class="text-lg font-semibold">Tarjetón #{{ candidato.tarjeton }}</p>
+                        
+                        <!-- Tarjetón con icono -->
+                        <div class="flex items-center justify-center space-x-2">
+                            <img src="{% static 'img/osicari.jpg' %}" alt="Tarjetón" class="w-5 h-5 rounded-full border border-gray-300">
+                            <p class="text-lg font-semibold">Tarjetón #{{ candidato.tarjeton }}</p>
+                        </div>
+            
                         <p class="text-xl font-semibold text-gray-800">{{ candidato.nombre }}</p>
                     </div>
                 </label>
@@ -106,11 +118,15 @@
                     <input type="radio" name="candidato" value="3" class="hidden peer">
                     <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition p-4 text-center peer-checked:ring-2 peer-checked:ring-blue-500">
                         <img src="{% static 'img/perfil.png' %}" alt="Candidato 3" class="w-full rounded-lg mb-2 transform transition hover:scale-105">
-                        <p class="text-lg font-semibold">Voto en blnaco</p>
+                        
+                        <!-- Voto en blanco SIN icono -->
+                        <p class="text-lg font-semibold">Voto en blanco</p>
+            
                         <p class="text-xl font-semibold text-gray-800">{{ candidato.nombre }}</p>
                     </div>
                 </label>
             </div>
+            
         
             <div class="w-full flex justify-center mt-6">
                 <button type="submit" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition">
