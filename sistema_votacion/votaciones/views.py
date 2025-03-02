@@ -70,7 +70,7 @@ def guardar_voto(request):
     # Obtener grados y mesas
     grados = sorted(Grado.objects.all(), key=extraer_numero)
     mesas = Mesa.objects.all()
-    return render(request, "index.html", {"grados": grados, "mesas": mesas})
+    return render(request, "votaciones/index.html", {"grados": grados, "mesas": mesas})
 
 
 
