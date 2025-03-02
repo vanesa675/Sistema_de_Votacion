@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg')  # 👈 Evita que intente abrir una GUI
+import matplotlib.pyplot as plt
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponse
@@ -20,8 +23,9 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Image
 from io import BytesIO
 import os
 from django.conf import settings
+from votaciones.models import Estudiante, Grado  # Asegúrate de que sea el nombre correcto de tu app
 
-LOGO_PATH = os.path.join(settings.BASE_DIR, "static", "img/logo.png")
+LOGO_PATH = os.path.join(settings.BASE_DIR, "static","img","logo.png")
 
 # Función para verificar si el usuario es administrador
 def es_admin(user):
@@ -87,36 +91,57 @@ def ordenar_grados(grados):
     }
     return sorted(grados, key=lambda g: orden_deseado.get(g.nombre, 99))
 
-@login_required
-@user_passes_test(es_admin)
-def descargar_pdf(request):
-    """Genera un PDF con los estudiantes organizados en tablas con mejor diseño."""
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="reporte_votaciones.pdf"'
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)  # Solo administradores
+def descargar_pdf(request, grado):
+    """Genera un PDF con gráficos y datos de votaciones solo para el grado seleccionado."""
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="reporte_votaciones_grado_{grado}.pdf"'
     doc = SimpleDocTemplate(response, pagesize=letter)
     elementos = []
     styles = getSampleStyleSheet()
-    heading2_centered_style = ParagraphStyle(name="Heading2Centered", parent=styles['Heading2'], alignment=1)
+    centered_style = ParagraphStyle(name="Centered", parent=styles['Heading2'], alignment=1)
 
-    # Agregar el logo
+    # 📌 Agregar el logo
     try:
-        imagen = Image(LOGO_PATH, width=100, height=100)
-        elementos.append(imagen)
+        logo = Image(LOGO_PATH, width=100, height=100)
+        elementos.append(logo)
     except Exception:
         elementos.append(Paragraph("[Logo no disponible]", styles['Italic']))
 
-    # Agregar título y subtítulo centrados
+    # 📌 Agregar título y subtítulo
     elementos.append(Paragraph("Gimnasio Minuto de Dios", styles['Title']))
-    elementos.append(Paragraph("Votaciones 2025", heading2_centered_style))
+    elementos.append(Paragraph(f"Votaciones 2025 - Grado {grado}", centered_style))
     elementos.append(Spacer(1, 12))
 
-    # Obtener y ordenar los grados correctamente
-    grados = ordenar_grados(Grado.objects.all())
+    # 📌 Obtener resultados de votaciones del grado específico
+    votos = obtener_resultados_votaciones(grado)
 
-    for grado in grados:
-        estudiantes = Estudiante.objects.filter(grado=grado).select_related('candidato', 'mesa').order_by('nombre')
-        elementos.append(Paragraph(f"🔹 Grado: {grado.nombre}", styles['Heading2']))
+    if votos:
+        # 🥧 Agregar gráfico de torta
+        buffer_torta = generar_grafico_torta(votos)
+        img_torta = Image(buffer_torta, width=400, height=300)
+        elementos.append(Paragraph("Distribución de Votos en el Grado", styles['Heading2']))
+        elementos.append(img_torta)
+        elementos.append(Spacer(1, 10))
+
+        # 🏆 Determinar el candidato con más votos en el grado
+        candidato_ganador = max(votos, key=votos.get)
+        total_votos = votos[candidato_ganador]
+        elementos.append(Paragraph(f"🏆 Candidato más votado en este grado: {candidato_ganador} ({total_votos} votos)", styles['Heading2']))
+        elementos.append(Spacer(1, 20))
+    else:
+        elementos.append(Paragraph("⚠ No hay votos registrados para este grado.", styles['Italic']))
+        elementos.append(Spacer(1, 20))
+
+    # 📌 Agregar tabla de estudiantes del grado
+    try:
+        grado_obj = Grado.objects.get(id=grado)
+        estudiantes = Estudiante.objects.filter(grado=grado_obj).select_related('candidato', 'mesa').order_by('nombre')
+
+        elementos.append(Paragraph(f"🔹 Grado: {grado_obj.nombre}", styles['Heading2']))
         elementos.append(Spacer(1, 10))
 
         if estudiantes.exists():
@@ -138,15 +163,43 @@ def descargar_pdf(request):
         else:
             elementos.append(Paragraph("⚠ No hay estudiantes en este grado.", styles['Italic']))
 
-        elementos.append(Spacer(1, 20))
+    except Grado.DoesNotExist:
+        elementos.append(Paragraph("⚠ Error: El grado seleccionado no existe.", styles['Italic']))
 
+    elementos.append(Spacer(1, 20))
     doc.build(elementos)
     return response
 
+# 📌 Función para obtener los votos por candidato en un grado específico
+def obtener_resultados_votaciones(grado):
+    """Devuelve un diccionario con los votos de cada candidato en el grado seleccionado."""
+    votos = {}
+    estudiantes = Estudiante.objects.filter(grado=grado)
+
+    for estudiante in estudiantes:
+        candidato = estudiante.candidato.nombre
+        votos[candidato] = votos.get(candidato, 0) + 1
+
+    return votos
+
+# 🥧 Función para generar el gráfico de torta
+def generar_grafico_torta(votos):
+    """Genera un gráfico de torta con la distribución de votos."""
+    fig, ax = plt.subplots(figsize=(5, 3))
+    ax.pie(votos.values(), labels=votos.keys(), autopct='%1.1f%%', colors=['blue', 'red', 'green', 'purple'])
+    ax.set_title("Distribución de Votos")
+
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    plt.close(fig)
+    buffer.seek(0)
+    return buffer
+
 @login_required
-@user_passes_test(es_admin)
+@user_passes_test(lambda u: u.is_staff)  # Solo administradores
 def descargar_excel(request, grado=None):
-    """Genera un Excel con los estudiantes organizados por grado, mostrando Nombre, Mesa y Tarjetón."""
+    """Genera un Excel con los estudiantes organizados por grado, mostrando Nombre, Mesa, Tarjetón, gráfica de torta y el candidato con más votos."""
+    
     if grado:
         try:
             grados = [Grado.objects.get(id=grado)]
@@ -168,6 +221,9 @@ def descargar_excel(request, grado=None):
             'nombre', 'mesa__nombre', 'candidato__tarjeton'
         ).order_by('nombre')
 
+        # 📌 Obtener resultados de votaciones del grado
+        votos = obtener_resultados_votaciones(grado)
+
         if estudiantes:
             df = pd.DataFrame(estudiantes)
             df.rename(columns={'nombre': 'Nombre', 'mesa__nombre': 'Mesa', 'candidato__tarjeton': 'Tarjetón'}, inplace=True)
@@ -185,6 +241,23 @@ def descargar_excel(request, grado=None):
             worksheet.write(0, col_num, value, header_format)
             worksheet.set_column(col_num, col_num, 20)  # Ajustar ancho de columna
 
+        # 🥧 Agregar gráfico de torta si hay votos
+        if votos:
+            buffer_torta = generar_grafico_torta(votos)
+            imagen_path = f"grafico_grado_{grado.nombre}.png"
+            
+            with open(imagen_path, "wb") as f:
+                f.write(buffer_torta.getvalue())
+
+            worksheet.insert_image("E2", imagen_path, {'x_scale': 0.5, 'y_scale': 0.5})
+
+            # 🏆 Determinar el candidato con más votos
+            candidato_ganador = max(votos, key=votos.get)
+            total_votos = votos[candidato_ganador]
+            worksheet.write(20, 0, f"🏆 Candidato más votado: {candidato_ganador} ({total_votos} votos)")
+        else:
+            worksheet.write(20, 0, "⚠ No hay votos registrados en este grado.")
+
     writer.close()
     output.seek(0)
 
@@ -192,32 +265,77 @@ def descargar_excel(request, grado=None):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
+# 📌 Función para obtener los votos de un grado específico
+def obtener_resultados_votaciones(grado):
+    """Devuelve un diccionario con los votos de cada candidato en un grado específico."""
+    votos = {}
+    estudiantes = Estudiante.objects.filter(grado=grado)
+
+    for estudiante in estudiantes:
+        candidato = estudiante.candidato.nombre
+        votos[candidato] = votos.get(candidato, 0) + 1
+
+    return votos
+
+# 🥧 Función para generar el gráfico de torta
+def generar_grafico_torta(votos):
+    """Genera un gráfico de torta con la distribución de votos en un grado específico."""
+    fig, ax = plt.subplots(figsize=(4, 3))
+    ax.pie(votos.values(), labels=votos.keys(), autopct='%1.1f%%', colors=['blue', 'red', 'green', 'purple'])
+    ax.set_title("Distribución de Votos")
+
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    plt.close(fig)
+    buffer.seek(0)
+    return buffer
+
 
 @login_required
-@user_passes_test(es_admin)
+@user_passes_test(lambda u: u.is_staff)  # Solo administradores
 def descargar_todos_pdf(request):
-    """Genera un PDF con los estudiantes de todos los grados organizados correctamente."""
+    """Genera un PDF con los estudiantes de todos los grados y una gráfica de torta al inicio."""
+    
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="reporte_todos_los_grados.pdf"'
-
     doc = SimpleDocTemplate(response, pagesize=letter)
     elementos = []
     styles = getSampleStyleSheet()
-    heading2_centered_style = ParagraphStyle(name="Heading2Centered", parent=styles['Heading2'], alignment=1)
+    centered_style = ParagraphStyle(name="Centered", parent=styles['Heading2'], alignment=1)
 
-    # ✅ Agregar el logo en la portada
+    # 📌 Agregar el logo en la portada
     try:
         imagen = Image(LOGO_PATH, width=100, height=100)
         elementos.append(imagen)
     except Exception:
         elementos.append(Paragraph("[Logo no disponible]", styles['Italic']))
 
-    # ✅ Agregar título y subtítulo
+    # 📌 Agregar título y subtítulo
     elementos.append(Paragraph("Gimnasio Minuto de Dios", styles['Title']))
-    elementos.append(Paragraph("Votaciones 2025", heading2_centered_style))
+    elementos.append(Paragraph("Votaciones 2025", centered_style))
     elementos.append(Spacer(1, 12))
 
-    # ✅ Obtener y ordenar los grados correctamente
+    # 📌 Obtener los votos de todos los grados
+    votos = obtener_resultados_votaciones_todos()
+
+    if votos:
+        # 🥧 Agregar gráfico de torta con los votos totales al inicio
+        buffer_torta = generar_grafico_torta(votos)
+        img_torta = Image(buffer_torta, width=400, height=300)
+        elementos.append(Paragraph("Gráfico de Torta - Distribución de Votos en Todos los Grados", styles['Heading2']))
+        elementos.append(img_torta)
+        elementos.append(Spacer(1, 10))
+
+        # 🏆 Determinar el candidato con más votos
+        candidato_ganador = max(votos, key=votos.get)
+        total_votos = votos[candidato_ganador]
+        elementos.append(Paragraph(f"🏆 Candidato con más votos: {candidato_ganador} ({total_votos} votos)", styles['Heading2']))
+        elementos.append(Spacer(1, 20))
+    else:
+        elementos.append(Paragraph("⚠ No hay votos registrados en ningún grado.", styles['Italic']))
+        elementos.append(Spacer(1, 20))
+
+    # 📌 Obtener y ordenar los grados correctamente
     grados = ordenar_grados(Grado.objects.all())
 
     for grado in grados:
@@ -230,7 +348,7 @@ def descargar_todos_pdf(request):
             for estudiante in estudiantes:
                 data.append([estudiante.nombre, estudiante.mesa.nombre, estudiante.candidato.tarjeton])
 
-            # ✅ Aplicar diseño a la tabla
+            # 📌 Aplicar diseño a la tabla
             tabla = Table(data, colWidths=[200, 100, 100])
             tabla.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
@@ -246,20 +364,40 @@ def descargar_todos_pdf(request):
         
         elementos.append(Spacer(1, 20))
 
-    # ✅ Aplicar la marca de agua en todas las páginas
-    def agregar_marca_agua_en_pagina(canvas, doc):
-        agregar_marca_agua(canvas)  # Agrega la marca de agua en cada página
-
-    doc.build(elementos, onFirstPage=agregar_marca_agua_en_pagina, onLaterPages=agregar_marca_agua_en_pagina)
-
+    doc.build(elementos)
     return response
+
+# 📌 Función para obtener los votos de todos los grados
+def obtener_resultados_votaciones_todos():
+    """Devuelve un diccionario con los votos de todos los candidatos en todos los grados."""
+    votos = {}
+    estudiantes = Estudiante.objects.all()
+
+    for estudiante in estudiantes:
+        candidato = estudiante.candidato.nombre
+        votos[candidato] = votos.get(candidato, 0) + 1
+
+    return votos
+
+# 🥧 Función para generar el gráfico de torta con los votos de todos los grados
+def generar_grafico_torta(votos):
+    """Genera un gráfico de torta con la distribución de votos en todos los grados."""
+    fig, ax = plt.subplots(figsize=(5, 3))
+    ax.pie(votos.values(), labels=votos.keys(), autopct='%1.1f%%', colors=['blue', 'red', 'green', 'purple'])
+    ax.set_title("Distribución de Votos en Todos los Grados")
+
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    plt.close(fig)
+    buffer.seek(0)
+    return buffer
 
 
 @login_required
-@user_passes_test(es_admin)
+@user_passes_test(lambda u: u.is_staff)  # Solo administradores
 def descargar_todos_excel(request):
-    """Genera un Excel con los estudiantes de todos los grados organizados por hoja en el orden personalizado."""
-    
+    """Genera un Excel con los estudiantes de todos los grados organizados por hoja en el orden personalizado, incluyendo gráfico de torta y candidato más votado."""
+
     # ✅ Orden personalizado de grados
     def ordenar_grados(grados):
         orden_deseado = {
@@ -276,7 +414,32 @@ def descargar_todos_excel(request):
 
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    workbook = writer.book
 
+    # 📌 Obtener resultados de votaciones de todos los grados
+    votos_todos = obtener_resultados_votaciones_todos()
+
+    if votos_todos:
+        # 🥧 Generar gráfico de torta con los votos totales
+        buffer_torta = generar_grafico_torta(votos_todos)
+        imagen_path = "grafico_todos_los_grados.png"
+        
+        with open(imagen_path, "wb") as f:
+            f.write(buffer_torta.getvalue())
+
+        # 🏆 Determinar el candidato con más votos
+        candidato_ganador = max(votos_todos, key=votos_todos.get)
+        total_votos = votos_todos[candidato_ganador]
+
+        # 📌 Crear hoja de resumen con el gráfico y el candidato más votado
+        worksheet_resumen = workbook.add_worksheet("Resumen General")
+        worksheet_resumen.insert_image("B2", imagen_path, {'x_scale': 0.5, 'y_scale': 0.5})
+        worksheet_resumen.write(20, 1, f"🏆 Candidato más votado en todos los grados: {candidato_ganador} ({total_votos} votos)")
+    else:
+        worksheet_resumen = workbook.add_worksheet("Resumen General")
+        worksheet_resumen.write(2, 1, "⚠ No hay votos registrados en ningún grado.")
+
+    # 📌 Generar hojas por cada grado
     for grado in grados:
         estudiantes = grado.estudiante_set.select_related('candidato', 'mesa').values(
             'nombre', 'mesa__nombre', 'candidato__tarjeton'
@@ -291,13 +454,32 @@ def descargar_todos_excel(request):
         df.to_excel(writer, sheet_name=f"Grado {grado.nombre}", index=False)
 
         # ✅ Aplicar formato al Excel
-        workbook = writer.book
         worksheet = writer.sheets[f"Grado {grado.nombre}"]
         header_format = workbook.add_format({'bold': True, 'font_color': 'white', 'bg_color': 'blue', 'align': 'center'})
 
         for col_num, value in enumerate(df.columns.values):
             worksheet.write(0, col_num, value, header_format)
             worksheet.set_column(col_num, col_num, 20)  # Ajustar ancho de columna automáticamente
+
+        # 📌 Obtener resultados de votaciones del grado específico
+        votos_grado = obtener_resultados_votaciones(grado)
+
+        if votos_grado:
+            # 🥧 Generar gráfico de torta para este grado
+            buffer_torta_grado = generar_grafico_torta(votos_grado)
+            imagen_path_grado = f"grafico_grado_{grado.nombre}.png"
+            
+            with open(imagen_path_grado, "wb") as f:
+                f.write(buffer_torta_grado.getvalue())
+
+            worksheet.insert_image("E2", imagen_path_grado, {'x_scale': 0.5, 'y_scale': 0.5})
+
+            # 🏆 Determinar el candidato con más votos en este grado
+            candidato_ganador_grado = max(votos_grado, key=votos_grado.get)
+            total_votos_grado = votos_grado[candidato_ganador_grado]
+            worksheet.write(20, 0, f"🏆 Candidato más votado en este grado: {candidato_ganador_grado} ({total_votos_grado} votos)")
+        else:
+            worksheet.write(20, 0, "⚠ No hay votos registrados en este grado.")
 
     writer.close()
     output.seek(0)
@@ -306,3 +488,39 @@ def descargar_todos_excel(request):
     response['Content-Disposition'] = 'attachment; filename="reporte_todos_los_grados.xlsx"'
     return response
 
+# 📌 Función para obtener los votos de todos los grados
+def obtener_resultados_votaciones_todos():
+    """Devuelve un diccionario con los votos de todos los candidatos en todos los grados."""
+    votos = {}
+    estudiantes = Estudiante.objects.all()
+
+    for estudiante in estudiantes:
+        candidato = estudiante.candidato.nombre
+        votos[candidato] = votos.get(candidato, 0) + 1
+
+    return votos
+
+# 📌 Función para obtener los votos de un grado específico
+def obtener_resultados_votaciones(grado):
+    """Devuelve un diccionario con los votos de cada candidato en un grado específico."""
+    votos = {}
+    estudiantes = Estudiante.objects.filter(grado=grado)
+
+    for estudiante in estudiantes:
+        candidato = estudiante.candidato.nombre
+        votos[candidato] = votos.get(candidato, 0) + 1
+
+    return votos
+
+# 🥧 Función para generar el gráfico de torta con los votos de todos los grados o un grado específico
+def generar_grafico_torta(votos):
+    """Genera un gráfico de torta con la distribución de votos en un grado o en todos los grados."""
+    fig, ax = plt.subplots(figsize=(4, 3))
+    ax.pie(votos.values(), labels=votos.keys(), autopct='%1.1f%%', colors=['blue', 'red', 'green', 'purple'])
+    ax.set_title("Distribución de Votos")
+
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    plt.close(fig)
+    buffer.seek(0)
+    return buffer
