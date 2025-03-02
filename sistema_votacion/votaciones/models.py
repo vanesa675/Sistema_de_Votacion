@@ -14,12 +14,11 @@ class Mesa(models.Model):
 
 class Candidato(models.Model):
     nombre = models.CharField(max_length=100)
-    tarjeton = models.CharField(max_length=100, unique=True)  # Número único y obligatorio
-    descripcion = models.TextField(blank=True, null=True)
-    imagen = models.ImageField(upload_to="candidatos/", default="candidatos/perfil.png")
+    tarjeton = models.IntegerField(unique=True)
+    imagen = models.ImageField(upload_to='candidatos/')  # Guarda la imagen en /media/candidatos/
 
     def __str__(self):
-        return f"{self.nombre} - Tarjetón {self.tarjeton}"
+        return f"{self.nombre} - Tarjetón #{self.tarjeton}"
 
 
 class Estudiante(models.Model):
@@ -29,7 +28,7 @@ class Estudiante(models.Model):
     mesa = models.ForeignKey("Mesa", on_delete=models.CASCADE, default=1)  # 🔹 Asignar un valor por defecto
 
     def __str__(self):
-        return f"{self.nombre} - {self.grado.nombre} - Candidato {self.candidato}"
+        return f"{self.grado.nombre} - {self.mesa} - {self.nombre} - Candidato {self.tarjeton}"
 
 
 

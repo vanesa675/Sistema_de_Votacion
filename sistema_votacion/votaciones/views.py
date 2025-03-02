@@ -31,6 +31,10 @@ LOGO_PATH = os.path.join(settings.BASE_DIR, "static","img","logo.png")
 def es_admin(user):
     return user.is_staff  # Solo los administradores pueden acceder
 
+def index(request):
+    candidatos = Candidato.objects.all()
+    return render(request, 'index.html', {'candidatos': candidatos})
+
 def extraer_numero(grado):
     """ Extrae el número de un grado y lo ordena correctamente. """
     match = re.match(r'\d+', grado.nombre)

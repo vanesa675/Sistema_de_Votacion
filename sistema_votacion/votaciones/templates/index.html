@@ -1,4 +1,5 @@
 {% load static %}
+{% for candidato in candidatos %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -87,8 +88,8 @@
                     <input type="radio" name="candidato" value="1" class="hidden peer" required>
                     <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition p-4 text-center peer-checked:ring-2 peer-checked:ring-blue-500">
                         <img src="{% static 'img/Daniel.jpeg' %}" alt="Candidato 1" class="w-full rounded-lg mb-2 transform transition hover:scale-105">
-                        <p class="text-lg font-semibold">Tarjetón #01</p>
-                        <p class="text-xl font-semibold text-gray-800">Daniel</p>
+                        <p class="text-lg font-semibold">Tarjetón #{{ candidato.tarjeton }}</p>
+                        <p class="text-xl font-semibold text-gray-800">{{ candidato.nombre }}</p>
                     </div>
                 </label>
                 
@@ -96,8 +97,8 @@
                     <input type="radio" name="candidato" value="2" class="hidden peer">
                     <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition p-4 text-center peer-checked:ring-2 peer-checked:ring-blue-500">
                         <img src="{% static 'img/Angela.jpeg' %}" alt="Candidato 2" class="w-full rounded-lg mb-2 transform transition hover:scale-105">
-                        <p class="text-lg font-semibold">Tarjetón #02</p>
-                        <p class="text-xl font-semibold text-gray-800">Angela</p>
+                        <p class="text-lg font-semibold">Tarjetón #{{ candidato.tarjeton }}</p>
+                        <p class="text-xl font-semibold text-gray-800">{{ candidato.nombre }}</p>
                     </div>
                 </label>
                 
@@ -105,8 +106,8 @@
                     <input type="radio" name="candidato" value="3" class="hidden peer">
                     <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition p-4 text-center peer-checked:ring-2 peer-checked:ring-blue-500">
                         <img src="{% static 'img/perfil.png' %}" alt="Candidato 3" class="w-full rounded-lg mb-2 transform transition hover:scale-105">
-                        <p class="text-lg font-semibold">Voto en blanco</p>
-                        <p class="text-xl font-semibold text-gray-800">Sin candidato</p>
+                        <p class="text-lg font-semibold">Voto en blnaco</p>
+                        <p class="text-xl font-semibold text-gray-800">{{ candidato.nombre }}</p>
                     </div>
                 </label>
             </div>
