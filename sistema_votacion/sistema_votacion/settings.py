@@ -79,10 +79,10 @@ WSGI_APPLICATION = 'sistema_votacion.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'votaciones',
-        'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
+        'NAME': 'gimnasio122$votaciones_db',
+        'USER': 'gimnasio122',
+        'PASSWORD': 'Empanada123!',
+        'HOST': 'gimnasio122.mysql.pythonanywhere-services.com',
         'PORT': '3306',
 
     }
