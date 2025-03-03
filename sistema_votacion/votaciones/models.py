@@ -15,6 +15,7 @@ class Mesa(models.Model):
 class Candidato(models.Model):
     nombre = models.CharField(max_length=100)
     tarjeton = models.IntegerField(unique=True)
+    descripcion = models.CharField(max_length=100)
     imagen = models.ImageField(upload_to='candidatos/')  # Guarda la imagen en /media/candidatos/
 
     def __str__(self):
