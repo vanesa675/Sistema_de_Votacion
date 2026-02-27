@@ -1,7 +1,11 @@
 from django.db import models
 
 class Grado(models.Model):
-    nombre = models.CharField(max_length=10, unique=True)  # Ejemplo: "1°A", "2°B", "10°"
+    numero = models.IntegerField(unique=True)
+    nombre = models.CharField(max_length=10, unique=True)
+
+    class Meta:
+        ordering = ['numero']  # 🔥 Orden automático
 
     def __str__(self):
         return self.nombre
@@ -29,7 +33,9 @@ class Estudiante(models.Model):
     mesa = models.ForeignKey("Mesa", on_delete=models.CASCADE, default=1)  # 🔹 Asignar un valor por defecto
 
     def __str__(self):
-        return f"{self.grado.nombre} - {self.mesa} - {self.nombre} - Candidato {self.tarjeton}"
+        if self.candidato:
+            return f"{self.grado.nombre} - {self.mesa} - {self.nombre} - Tarjetón {self.candidato.tarjeton}"
+        return f"{self.grado.nombre} - {self.mesa} - {self.nombre} - Sin candidato"
 
 
 

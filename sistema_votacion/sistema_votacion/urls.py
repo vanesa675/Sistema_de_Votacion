@@ -4,6 +4,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from votaciones.views import (
     guardar_voto, descargar_pdf, descargar_excel, descargar_todos_pdf, descargar_todos_excel, 
 )
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 # Función para verificar si el usuario es administrador
 def es_admin(user):
@@ -26,3 +29,7 @@ urlpatterns = [
     path('descargar-todos-pdf/', login_required(user_passes_test(es_admin)(descargar_todos_pdf)), name='descargar_todos_pdf'),
     path('descargar-todos-excel/', login_required(user_passes_test(es_admin)(descargar_todos_excel)), name='descargar_todos_excel'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

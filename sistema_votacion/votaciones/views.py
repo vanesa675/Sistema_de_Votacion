@@ -63,13 +63,29 @@ def guardar_voto(request):
                 if Estudiante.objects.filter(nombre=nombre, grado=grado, mesa=mesa).exists():
                     messages.error(request, "⚠️ Este estudiante ya ha votado en esta mesa.")
                 else:
-                    estudiante = Estudiante(nombre=nombre, grado=grado, candidato=candidato, mesa=mesa)
+                    estudiante = Estudiante(
+                        nombre=nombre,
+                        grado=grado,
+                        candidato=candidato,
+                        mesa=mesa
+                    )
                     estudiante.save()
                     messages.success(request, "✅ ¡Votación exitosa! Tu voto ha sido registrado.")
-                    return redirect('index')  # ✅ Redirige a la vista correcta
+                    return redirect('index')
 
             except (Grado.DoesNotExist, Candidato.DoesNotExist, Mesa.DoesNotExist):
                 messages.error(request, "⚠️ Hubo un problema con los datos seleccionados.")
+
+    # 🔥 ESTO ES LO QUE FALTABA
+    grados = sorted(Grado.objects.all(), key=extraer_numero)
+    mesas = Mesa.objects.all()
+    candidatos = Candidato.objects.all().order_by("tarjeton")
+
+    return render(request, "votaciones/index.html", {
+        "grados": grados,
+        "mesas": mesas,
+        "candidatos": candidatos
+    })
 
     # Obtener grados y mesas
     grados = sorted(Grado.objects.all(), key=extraer_numero)

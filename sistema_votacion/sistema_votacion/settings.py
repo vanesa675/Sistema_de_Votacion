@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-0+f)0mb(&nslw@1)^-_-3xx7#3wuu+$$3ni8b^pq1()bpou(-@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['gimnasio122.pythonanywhere.com', 'www.gimnasio122.pythonanywhere.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -79,10 +79,10 @@ WSGI_APPLICATION = 'sistema_votacion.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'gimnasio122$votaciones_db_new',
-        'USER': 'gimnasio122',
-        'PASSWORD': 'Empanada123!',
-        'HOST': 'gimnasio122.mysql.pythonanywhere-services.com',
+        'NAME': 'gimnasio122',
+        'USER': 'root',
+        'PASSWORD': 'root',
+        'HOST': 'localhost',
         'PORT': '3306',
 
     }
@@ -137,3 +137,7 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
