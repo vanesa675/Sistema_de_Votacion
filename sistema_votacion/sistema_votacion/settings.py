@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-0+f)0mb(&nslw@1)^-_-3xx7#3wuu+$$3ni8b^pq1()bpou(-@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['gimnasio.pythonanywhere.com']
 
 
 # Application definition
@@ -79,10 +79,10 @@ WSGI_APPLICATION = 'sistema_votacion.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'gimnasio122',
-        'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
+        'NAME': 'Gimnasio$default',
+        'USER': 'Gimnasio',
+        'PASSWORD': 'Admin123*',
+        'HOST': 'Gimnasio.mysql.pythonanywhere-services.com',
         'PORT': '3306',
 
     }
